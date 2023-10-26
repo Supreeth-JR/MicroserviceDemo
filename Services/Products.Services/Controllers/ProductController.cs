@@ -12,14 +12,19 @@ public class ProductContoller : ControllerBase
 {
     private readonly IMediator Mediator;
 
-    public ProductContoller(IMediator mediator)
+    private readonly ILogger<ProductContoller> Logger;
+
+    public ProductContoller(IMediator mediator, ILogger<ProductContoller> logger)
     {
         Mediator = mediator;
+        Logger = logger;
+        Logger.LogInformation("Product controller.");
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAllProducts()
     {
+        Logger.LogInformation("Get all product.");
         var result = await Mediator.Send(new GetAllProductQuery());
         return Ok(result);
     }
