@@ -1,9 +1,24 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Orders.Service.Models;
 using Orders.Service.Repository;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddMassTransit(config => 
+{
+    config.UsingRabbitMq((ctx, cfg) => 
+    {
+        cfg.Host("amqp://guest:guest@localhost:5672");
+    });
+});
+
+builder.Services.Configure<MassTransitHostOptions>(option =>
+{
+    option.WaitUntilStarted = true;
+});
+
 
 // Add services to the container.
 builder.Services.AddTransient<IOrderRepository, OrderRepository>();

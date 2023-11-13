@@ -1,0 +1,11 @@
+version: "3"
+services:
+    rabbitmq:
+        image: rabbitmq:3.13-rc-management
+        container_name: rabbitmq-server
+        ports:            
+            - "5672:5672"
+            - "8081:15672"
+        environment:
+            - RABBITMQ_USERNAME:guest
+            - RABBITMQ_PASSWORD:guest

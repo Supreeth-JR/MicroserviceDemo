@@ -20,7 +20,10 @@ public class GetAllOrdersHandler : IRequestHandler<GetAllOrdersQuery, ResponseDt
         try
         {
             var orders = await Repository.GetAllOrder(request.PageNumber,request.PageSize);
-            var orderDto = orders.Select(async order => new OrderDto
+            var orderIds = orders.AsParallel().Select(x => x.OrderId).ToList();
+            var ordersDetails = await Repository.GetOrdersDetails(orderIds);
+
+            var orderDto = orders.AsParallel().Select(order => new OrderDto
             {
                 CustomerId = order.CustomerId,
                 EmployeeId = order.EmployeeId,
@@ -39,7 +42,16 @@ public class GetAllOrdersHandler : IRequestHandler<GetAllOrdersQuery, ResponseDt
                     Via = order.ShipVia,
                 },
                 ShippedDate = order.ShippedDate,
-                OrderDetails = await GetOrderDetails(order.OrderId),
+                OrderDetails = ordersDetails
+                    .Where(od => od.OrderId == order.OrderId)
+                    .Select(order => new OrderDetailsDto
+                    {
+                        Discount = order.Discount,
+                        Id = order.OrderId,
+                        ProductId = order.ProductId,
+                        Quantity = order.Quantity,
+                        UnitPrice = order.UnitPrice,
+                    }).ToList(),
             });
 
             return new ResponseDto
@@ -52,27 +64,9 @@ public class GetAllOrdersHandler : IRequestHandler<GetAllOrdersQuery, ResponseDt
         {
             return new ResponseDto
             {
-                IsSuccess = true,
+                IsSuccess = false,
                 ResponseMessage = ex.Message
             };
         }
-
-    }
-
-    private async Task<List<OrderDetailsDto>> GetOrderDetails(int orderId) 
-    {
-        var orderDetails = await Repository.GetOrderDetails(orderId);
-        if (orderDetails is not null && orderDetails.Count() > 0)
-        {
-            return orderDetails.Select(order => new OrderDetailsDto
-            {
-                Discount = order.Discount,
-                Id = order.OrderId,
-                ProductId   = order.ProductId,
-                Quantity = order.Quantity,
-                UnitPrice = order.UnitPrice,
-            }).ToList();
-        }
-        return null;
     }
 }

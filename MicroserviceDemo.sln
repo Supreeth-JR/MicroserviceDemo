@@ -11,7 +11,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApiGateway", "ApiGateway", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API.Gateway", "ApiGateway\API.Gateway\API.Gateway.csproj", "{AF7BF181-359E-4D4E-AB26-6632A59413B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orders.Service", "Services\Order.Service\Orders.Service.csproj", "{9660C949-0644-405E-93FB-79102DD24AA0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orders.Service", "Services\Order.Service\Orders.Service.csproj", "{9660C949-0644-405E-93FB-79102DD24AA0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DockerFiles", "DockerFiles", "{EE048106-FBFA-488A-BE5A-1CCC99EC1C34}"
+	ProjectSection(SolutionItems) = preProject
+		rabbitmq.yaml = rabbitmq.yaml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

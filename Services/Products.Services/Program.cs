@@ -1,9 +1,40 @@
+using MassTransit;
+using Products.Services;
 using Produts.Services.Repository;
 using Serilog;
 using Serilog.Events;
+using System.Net;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+/*
+builder.Services.AddMassTransit(config =>
+{
+
+    config.AddConsumer<OrderConsumer>();
+
+    config.UsingRabbitMq((ctx, cfg) => 
+    {
+        cfg.Host("amqp://localhost:5672", x =>
+        {
+            x.Username("guest");
+            x.Password("guest");
+        });
+
+        cfg.ReceiveEndpoint("order-queue", c => 
+        {
+            c.ConfigureConsumer<OrderConsumer>(ctx);
+        });
+    });
+});
+
+builder.Services.Configure<MassTransitHostOptions>(option =>
+{
+    option.WaitUntilStarted = true;
+});
+
+*/
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -18,8 +49,18 @@ builder.Services.AddSerilog((context, config) =>
 // Add services to the container.
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
-builder.Services.AddScoped<IProductRepository, ProductRepository>(option => 
+builder.Services.AddScoped<IProductRepository, ProductRepository>(option =>
     new ProductRepository(builder.Configuration.GetConnectionString("Products")));
+
+
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHttpsRedirection(options =>
+    {
+        options.RedirectStatusCode = (int)HttpStatusCode.PermanentRedirect;
+        options.HttpsPort = 443;
+    });
+}
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
