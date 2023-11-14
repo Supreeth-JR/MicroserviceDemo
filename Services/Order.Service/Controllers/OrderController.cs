@@ -34,4 +34,16 @@ public class OrderController : ControllerBase
     {
         return Ok(await Mediator.Send(new UpdateOrderCommand(order)));
     }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateOrder(OrderDto order)
+    {
+        return Ok(await Mediator.Send(new CreateOrderCommand(order)));
+    }
+
+    [HttpDelete("{orderId:int}")]
+    public async Task<IActionResult> DeleteOrder(int orderId)
+    {
+        return Ok(await Mediator.Send(new DeleteOrderCommand(orderId)));
+    }
 }

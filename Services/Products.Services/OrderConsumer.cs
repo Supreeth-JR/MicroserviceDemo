@@ -1,16 +1,21 @@
-﻿using MassTransit;
-using Products.Service.Models.Dtos;
-using System.Text.Json;
+﻿using Contrcts;
+using MassTransit;
+using MediatR;
+using Products.Services.Commands;
 
 namespace Products.Services;
 
-[ExcludeFromConfigureEndpoints]
-public class OrderConsumer : IConsumer
+public sealed class OrderConsumer : IConsumer<ProductQtyUpdateEvent>
 {
-    public async Task Consume(ConsumeContext context)
-    {
-        var msg = context;
+    private readonly IMediator Mediator;
 
-        await Console.Out.WriteLineAsync(JsonSerializer.Serialize(msg));
+    public OrderConsumer(IMediator mediator)
+    {
+        Mediator = mediator;
+    }
+
+    public async Task Consume(ConsumeContext<ProductQtyUpdateEvent> context)
+    {
+        await Mediator.Send(new UpdateProductQtyCommand(context.Message.Products));
     }
 }

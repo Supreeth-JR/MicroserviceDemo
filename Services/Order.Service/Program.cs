@@ -6,18 +6,27 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMassTransit(config => 
+builder.Services.AddMassTransit(busConfig => 
 {
-    config.UsingRabbitMq((ctx, cfg) => 
+    busConfig.SetKebabCaseEndpointNameFormatter(); // order-update-event
+
+    busConfig.UsingRabbitMq((context, config) => 
     {
-        cfg.Host("amqp://guest:guest@localhost:5672");
+        // config.Host("amqp://guest:guest@localhost:5672");
+        config.Host(new Uri(builder.Configuration["ServiceBus:Host"]), host =>
+        {
+            host.Username(builder.Configuration["ServiceBus:Username"]);
+            host.Username(builder.Configuration["ServiceBus:Password"]);
+        });
+
+        // This will take above configuration and convert it to requried topology on broker
+        // and helps in creating queue, exchange and buind them to messages which are being sent.
+        config.ConfigureEndpoints(context);
     });
 });
 
-builder.Services.Configure<MassTransitHostOptions>(option =>
-{
-    option.WaitUntilStarted = true;
-});
+builder.Services.AddMassTransitHostedService();
+
 
 
 // Add services to the container.

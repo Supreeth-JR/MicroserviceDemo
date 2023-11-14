@@ -10,4 +10,6 @@ public interface IOrderRepository
     Task<IEnumerable<OrderDetail>> GetOrdersDetails(List<int> orderIds);
     Task<bool> UpdateOrder(Order input);
     Task<bool> UpdateOrderDetails(List<OrderDetail> input);
+    Task<bool> DeleteOrder(Order order,IEnumerable<OrderDetail> orderDetails);
+    Task<bool> CreateOrder(Order order, IEnumerable<OrderDetail> orderDetails);
 }

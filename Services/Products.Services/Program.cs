@@ -8,33 +8,27 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-/*
-builder.Services.AddMassTransit(config =>
+builder.Services.AddMassTransit(busConfig =>
 {
+    busConfig.SetKebabCaseEndpointNameFormatter(); // order-update-event
+    busConfig.AddConsumer<OrderConsumer>();
 
-    config.AddConsumer<OrderConsumer>();
-
-    config.UsingRabbitMq((ctx, cfg) => 
+    busConfig.UsingRabbitMq((context, config) =>
     {
-        cfg.Host("amqp://localhost:5672", x =>
+        // config.Host("amqp://guest:guest@localhost:5672");
+        config.Host(new Uri(builder.Configuration["ServiceBus:Host"]), host =>
         {
-            x.Username("guest");
-            x.Password("guest");
+            host.Username(builder.Configuration["ServiceBus:Username"]);
+            host.Username(builder.Configuration["ServiceBus:Password"]);
         });
 
-        cfg.ReceiveEndpoint("order-queue", c => 
-        {
-            c.ConfigureConsumer<OrderConsumer>(ctx);
-        });
+        // This will take above configuration and convert it to requried topology on broker
+        // and helps in creating queue, exchange and buind them to messages which are being sent.
+        config.ConfigureEndpoints(context);
     });
 });
 
-builder.Services.Configure<MassTransitHostOptions>(option =>
-{
-    option.WaitUntilStarted = true;
-});
-
-*/
+builder.Services.AddMassTransitHostedService();
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)

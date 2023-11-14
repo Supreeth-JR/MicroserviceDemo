@@ -29,7 +29,7 @@ public class OrderRepository : IOrderRepository
 
     public async Task<Order> GetOrderById(int orderId)
     {
-        return await Context.Orders.Where(order=> order.OrderId == orderId).FirstOrDefaultAsync();
+        return await Context.Orders.Where(order => order.OrderId == orderId).FirstOrDefaultAsync();
     }
 
     public async Task<bool> UpdateOrder(Order input)
@@ -56,6 +56,46 @@ public class OrderRepository : IOrderRepository
         {
             Context.OrderDetails.UpdateRange(input);
             await Context.Database.CommitTransactionAsync();
+            await Context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception)
+        {
+            await Context.Database.RollbackTransactionAsync();
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteOrder(Order order, IEnumerable<OrderDetail> orderDetails)
+    {
+        await Context.Database.BeginTransactionAsync();
+        try
+        {
+            Context.Orders.Remove(order);
+            if(orderDetails is not null && orderDetails.Count() > 0)
+            {
+                Context.OrderDetails.RemoveRange(orderDetails);
+            }
+            await Context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception)
+        {
+            await Context.Database.RollbackTransactionAsync();
+            return false;
+        }
+    }
+
+    public async Task<bool> CreateOrder(Order order, IEnumerable<OrderDetail> orderDetails)
+    {
+        await Context.Database.BeginTransactionAsync();
+        try
+        {
+            await Context.Orders.AddAsync(order);
+            if (orderDetails is not null && orderDetails.Any())
+            {
+               await Context.OrderDetails.AddRangeAsync(orderDetails);
+            }
             await Context.SaveChangesAsync();
             return true;
         }

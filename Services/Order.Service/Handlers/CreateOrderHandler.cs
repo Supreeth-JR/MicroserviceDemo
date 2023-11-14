@@ -1,6 +1,4 @@
-﻿using Contrcts;
-using MassTransit;
-using MediatR;
+﻿using MediatR;
 using Orders.Service.Commands;
 using Orders.Service.Models;
 using Orders.Service.Models.Dtos;
@@ -8,18 +6,16 @@ using Orders.Service.Repository;
 
 namespace Orders.Service.Handlers;
 
-public class UpdateOrderDetailsHandler : IRequestHandler<UpdateOrderCommand, ResponseDto>
+public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, ResponseDto>
 {
     private readonly IOrderRepository Repository;
-    private IPublishEndpoint _PublishEndPoint;
 
-    public UpdateOrderDetailsHandler(IOrderRepository repository, IPublishEndpoint publishEndpoint)
+    public CreateOrderHandler(IOrderRepository repository)
     {
         Repository = repository;
-        _PublishEndPoint = publishEndpoint;
     }
 
-    public async Task<ResponseDto> Handle(UpdateOrderCommand request, CancellationToken cancellationToken)
+    public async Task<ResponseDto> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -37,10 +33,10 @@ public class UpdateOrderDetailsHandler : IRequestHandler<UpdateOrderCommand, Res
                 ShipCity = request.Order.ShipmentDetails.City,
                 ShipRegion = request.Order.ShipmentDetails.Region,
                 ShipPostalCode = request.Order.ShipmentDetails.PostalCode,
-                ShipCountry = request.Order.ShipmentDetails.Country,                
+                ShipCountry = request.Order.ShipmentDetails.Country,
             };
 
-            var orderDetails = request?.Order?.OrderDetails?.Select(x => new OrderDetail
+            var orderDetails = request.Order.OrderDetails?.Select(x => new OrderDetail
             {
                 Discount = x.Discount,
                 OrderId = x.Id,
@@ -49,33 +45,18 @@ public class UpdateOrderDetailsHandler : IRequestHandler<UpdateOrderCommand, Res
                 UnitPrice = x.UnitPrice
             }).ToList();
 
-            var orderResult = await Repository.UpdateOrder(order);
-            var orderDetailsResult = await Repository.UpdateOrderDetails(orderDetails);
-
-            var productToUpdate = new ProductQtyUpdateEvent
-            {
-                Products = orderDetails.Select(x => new ProductToBeUpdated
-                {
-                    ProductId = x.ProductId,
-                    ProductQty = x.Quantity
-                }).ToList()
-            };
-            var publisjResultawait = _PublishEndPoint.Publish<ProductQtyUpdateEvent>(productToUpdate);
-
+            var isOrderCreated = await Repository.CreateOrder(order, orderDetails);
             return new ResponseDto
             {
-                IsSuccess = true,
-                Response = request.Order,
-                ResponseMessage = orderDetailsResult && orderResult 
-                    ? "Order details updated." 
-                    : "Order details update failed."
+                IsSuccess = isOrderCreated,
+                ResponseMessage = "Order created succesfully."
             };
         }
         catch (Exception ex)
         {
             return new ResponseDto
             {
-                IsSuccess = true,
+                IsSuccess = false,
                 ResponseMessage = ex.Message
             };
         }

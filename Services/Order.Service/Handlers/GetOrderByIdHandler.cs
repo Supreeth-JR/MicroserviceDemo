@@ -56,7 +56,7 @@ public class GetOrderByIdHandler : IRequestHandler<GetOrderById, ResponseDto>
         }
     }
 
-    private OrderDto GetDtoObject(Order order, IEnumerable<OrderDetail> orderDetail = null)
+    private OrderDto GetDtoObject(Order order, IEnumerable<OrderDetail>? orderDetail = null)
     {
         return new OrderDto
         {

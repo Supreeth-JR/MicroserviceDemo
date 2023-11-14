@@ -22,7 +22,7 @@ public class ProductRepository : IProductRepository
         return await DbConnection.QueryAsync<Product>(query);
     }
 
-    public async Task<Product?> GetProductByIdAsync(int id)
+    public async Task<Product> GetProductByIdAsync(int id)
     {
         string query = @"SELECT *                        
                          FROM
